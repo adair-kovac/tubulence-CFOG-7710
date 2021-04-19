@@ -16,10 +16,10 @@ def get_wind_direction(u, v, bearing):
     :param bearing: degrees between true north and -x axis of sensor
     :return: wind direction in degrees clockwise from north
     """
-    sensor_wind_dir = math.degrees(np.arctan(-v/u))  # or u/v? or -u/v?
+    sensor_wind_dir = np.degrees(np.arctan(-v/u))  # or u/v? or -u/v?
     angle_from_north = bearing + sensor_wind_dir  # or should it be bearing - 90 ?
     angle_from_north = np.mod(angle_from_north, 360)
-    return angle_from_north
+    return np.int8(angle_from_north)
 
 
 def transform_wind(u, v, wind_direction):
@@ -33,10 +33,10 @@ def transform_wind(u, v, wind_direction):
     :return: u, v translated into the new coordinate system
     """
     wind_speed = np.sqrt(u**2 + v**2)
-    wind_direction = math.radians(wind_direction)
+    wind_direction = np.radians(wind_direction)
     new_u = - wind_speed * np.sin(wind_direction)
     new_v = - wind_speed * np.cos(wind_direction)
-    return new_u, new_v
+    return np.single(new_u), np.single(new_v), np.single(wind_speed)
 
 
 if __name__=="__main__":
