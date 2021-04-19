@@ -104,4 +104,29 @@ def convective_velocity_scale(z, theta_v_bar, ws_prime,theta_v_prime_surface, Hz
     arg=ws_prime*theta_v_prime_surface
     avg=compute_avg(arg, Hz=Hz, dt=dt)
     w_star=(g*z*avg/theta_v_bar)**(1/3) # Need to edit this once z structure is known!
+    return w_star
+
+def dissipation_rate(z, theta_v_bar, theta_v_prime, u_prime, v_prime, w_prime, ws_bar_2, ws_bar_5, ws_bar_10, Hz=20, dt=30):
+    # Compute dissipation rate; default to data taken at 20 Hz and 30 minute averages
+    
+    g=9.81
+    arg1=w_prime*theta_v_prime
+    arg2=u_prime*w_prime
+    avg1=compute_avg(arg1, Hz=20, dt=30)
+    avg2=compute_avg(arg2, Hz=20, dt=30)
+    if z==2 :
+        dU_dz=(-3*ws_bar_2+4*ws_bar_5-ws_bar_10)/8
+    elif z==5 :
+        dU_dx=(ws_bar_10-ws_bar_2)/8
+    else z==10 :
+        dU_dz=(3*ws_bar_10-4*ws_bar_5+ws_bar_2)/8
+    epsilon=((g/theta_v_bar)*avg1)-(avg2*dU_dz)
+    return epsilon
+
+def kolmogorov_length(nu, epsilon):
+    # Compute Kolmogorov microscale
+    
+    eta=((nu**3)/epsilon)**(1/4)
+    return eta
+    
 
