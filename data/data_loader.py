@@ -6,7 +6,6 @@ import mat4py
 def load_raw_visibility_data():
     visibility_path = _get_data_root_dir() / "PWD Visibility data"
     visibility_header = visibility_path / "PWD_header.dat"
-    header = []
     with open(visibility_header, "r+") as header_file:
         header = header_file.read().split()  # todo these are bad column names
         header = header[:-5] + ["1", "2", "3", "4", "5"]  # replacing - columns
@@ -26,6 +25,21 @@ def load_balloon_data(day, launch_number):
     data = pd.read_csv(launch_dir / dat_file, sep=r"\s+", skiprows=[1,2])
     return data
 
+
+def load_sonic_data_select_columns():
+    data = load_sonic_data()
+    keep_plain = ["t_0", "P_1"]
+    keep_indexed = ["u", "v", "w", "sonTs", "fwT", "fwTh"]
+    suffixes = ["2", "5", "10"]
+    new_names = ["time", "pressure", "u", "v", "w", "virtual_temp", "temp", "potential_temp"]
+    for level_i in range(0, 3):
+        keep_at_level = keep_plain + [col + "_" + str(level_i) for col in keep_indexed]
+        df_at_level = data[keep_at_level]
+        df_at_level.columns = new_names
+        output_dir = _get_sonic_data_dir() / "select_fields"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        df_at_level.to_csv(output_dir / ("sonic_data_"
+                                      + suffixes[level_i]), sep="\t")
 
 def load_sonic_data():
     try:
@@ -86,4 +100,4 @@ def _get_data_root_dir():
     return get_project_root() / "data" / "2021 Final Project Data"
 
 if __name__=="__main__":
-   print(load_sonic_data())
+   load_sonic_data_select_columns()
