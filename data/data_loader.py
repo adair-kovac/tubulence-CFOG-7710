@@ -7,6 +7,7 @@ from data import wind_coordinate
 import numpy as np
 
 
+
 def load_raw_visibility_data():
     """
     Loads both days of visibility data with columns:

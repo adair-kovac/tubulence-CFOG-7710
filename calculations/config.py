@@ -16,6 +16,12 @@ class Config:
     def is_enabled(self, calculation):
         return self.config["calculations"][calculation]["enabled"]
 
+    def run_calculation(self, calculation):
+        """ As opposed to just plotting from saved data """
+        return not (self.config["only_plots"] or (
+                    "only_plot" in self.config["calculations"][calculation] and
+                    self.config["calculations"][calculation]["only_plot"]))
+
     def get_figure_output_dir(self):
         return self.get_output_root_dir() / self.config["output_dirs"]["figures"]
 
