@@ -1,0 +1,14 @@
+# Starts from the project_root_dir in utils.path_utils
+output_dirs:
+  root: calculations/results_1
+  data: data
+  figures: figures
+
+# Starts from the data_root_dir in data_loader
+sonic_data_dir: SonicData/select_fields
+
+calculations:
+  w_avg:
+    enabled: True
+  T_avg:
+    enabled: True

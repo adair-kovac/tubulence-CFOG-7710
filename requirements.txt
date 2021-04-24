@@ -2,3 +2,4 @@ pandas
 numpy
 matplotlib
 mat4py
+yaml

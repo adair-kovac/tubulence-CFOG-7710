@@ -32,7 +32,7 @@ def load_balloon_data(day, launch_number):
     "time", "pressure", "temp", "relative_humidity", "altitude", "speed",
                     "direction", "potential_temp", "dewpoint"
 
-    Note that valid day/launch_number combos are (13, 2), (13,3), (14, 2), (14, 4), and (14, 5).
+    Note that valid day/launch_number combos are (13, 1), (13,3), (14, 2), (14, 4), and (14, 5).
 
     :param day: 13 or 14
     :param launch_number: 1, 2, 3, 4, or 5 (has to exist for the day passed)
@@ -52,7 +52,7 @@ def load_balloon_data(day, launch_number):
     return data
 
 
-def load_processed_sonic_data(level):
+def load_processed_sonic_data(level, directory_override=None):
     """
     Loads the sonic anemometer data (from an intermediate dataset you need to download!)
 
@@ -60,9 +60,12 @@ def load_processed_sonic_data(level):
     "time", "pressure", "rho_v", "u", "v", "w", "virtual_temp", "temp", "potential_temp"
 
     :param level: 2, 5, or 10 - the height (in meters) of the dataset
+    :param directory_override: path to test data/nondefault data path if applicable
     :return: pandas.DataFrame
     """
-    file = _get_sonic_data_dir() / "select_fields" / ("sonic_data_" + str(level))
+    directory = _get_data_root_dir() / directory_override if directory_override \
+        else _get_sonic_data_dir() / "select_fields"
+    file = directory / ("sonic_data_" + str(level))
     try:
         df = pd.read_csv(file, sep="\t", parse_dates=["time"], index_col=0)
         return df

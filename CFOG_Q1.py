@@ -7,20 +7,41 @@
 # Functions for Q1
 
 import numpy as np
+import datetime
+import pandas as pd
+
+
+def compute_avg_with_start_times(start_time, column_name, A, Hz=20, dt=30):
+    values = compute_avg(A, Hz, dt)
+    count = 0
+    times = []
+    for value in values:
+        minutes = dt*count
+        new_time = start_time + datetime.timedelta(minutes=minutes)
+        times.append(new_time)
+        count += 1
+    result = pd.DataFrame()
+    result["start_time"] = times
+    result[column_name] = values
+    return result
 
 def compute_avg(A, Hz=20, dt=30):
     # Compute averages of variable A; default to data taken at 20 Hz and 30 minute averages
-    
     N=len(A)
     P=(dt*60)*Hz
-    M=N/P
+    M=int(N/P)
     A_bar=np.zeros(M)
     for i in range(0,M):
         start=i*P
         end=(i+1)*P
+        count = 0
         for j in range(start,end):
-            A_bar[i]=A_bar[i]+A[j]
-        A_bar[i]=A_bar[i]/P
+            if np.isnan(A[j]):
+                print("Skipping value at {}, NaN".format(j))
+            else:
+                A_bar[i] = A_bar[i]+A[j]
+                count += 1
+        A_bar[i]=A_bar[i]/count
     return A_bar
     
 def compute_prime(A, A_bar, Hz=20, dt=30):
@@ -118,7 +139,7 @@ def dissipation_rate(z, theta_v_bar, theta_v_prime, u_prime, v_prime, w_prime, w
         dU_dz=(-3*ws_bar_2+4*ws_bar_5-ws_bar_10)/8
     elif z==5 :
         dU_dx=(ws_bar_10-ws_bar_2)/8
-    else z==10 :
+    elif z==10 :
         dU_dz=(3*ws_bar_10-4*ws_bar_5+ws_bar_2)/8
     epsilon=((g/theta_v_bar)*avg1)-(avg2*dU_dz)
     return epsilon
