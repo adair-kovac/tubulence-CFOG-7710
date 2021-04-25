@@ -13,17 +13,29 @@ import pandas as pd
 
 def compute_avg_with_start_times(start_time, column_name, A, Hz=20, dt=30):
     values = compute_avg(A, Hz, dt)
+    return create_dataframe(column_name, dt, start_time, values)
+
+def compute_std_with_start_times(start_time, column_name, A, Hz=20, dt=30):
+    values = std_dev(A, Hz, dt)
+    return create_dataframe(column_name, dt, start_time, values)
+
+def compute_prime_with_start_times(start_time, column_name, A, A_bar, Hz=20, dt=30):
+    values = compute_prime(A, A_bar, Hz=Hz, dt=dt)
+    return create_dataframe(column_name, dt, start_time, values)
+
+def create_dataframe(column_name, dt, start_time, values):
     count = 0
     times = []
     for value in values:
-        minutes = dt*count
+        minutes = dt * count
         new_time = start_time + datetime.timedelta(minutes=minutes)
         times.append(new_time)
         count += 1
     result = pd.DataFrame()
-    result["start_time"] = times
+    result["time"] = times
     result[column_name] = values
     return result
+
 
 def compute_avg(A, Hz=20, dt=30):
     # Compute averages of variable A; default to data taken at 20 Hz and 30 minute averages
@@ -49,13 +61,14 @@ def compute_prime(A, A_bar, Hz=20, dt=30):
     
     N=len(A)
     P=(dt*60)*Hz
-    M=N/P
+    M= int(N/P)
     A_prime=np.zeros(N)
     for i in range(0,M):
         start=i*P
         end=(i+1)*P
         for j in range(start,end):
-            A_prime[j]=A[j]-A_bar[i]
+            if A[j]:
+                A_prime[j]=A[j]-A_bar[i]
     return A_prime
     
 def wind_speed_avg(u, v, w, Hz=20, dt=30):
@@ -92,7 +105,6 @@ def friction_velocity(u_prime, v_prime, ws_prime, Hz=20, dt=30):
 
 def sensible_heat_flux(wprime_Tprime_bar, rho, c_p):
     # Compute sensible heat flux
-    
     H_s=rho*c_p*wprime_Tprime_bar
     return H_s
 
