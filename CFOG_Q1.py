@@ -137,8 +137,9 @@ def convective_velocity_scale(z, theta_v_bar, ws_prime,theta_v_prime_surface, Hz
     w_star=(g*z*avg/theta_v_bar)**(1/3) # Need to edit this once z structure is known!
     return w_star
 
-def dissipation_rate(nu, u_prime_2, u_prime_5, u_prime_10, v_prime_2, v_prime_5, v_prime_10, z):
+def dissipation_rate(u_prime_2, u_prime_5, u_prime_10, v_prime_2, v_prime_5, v_prime_10, z):
     # Compute dissipation rate
+    nu=1.5*(10**-5)
     if z==2 :
         du_prime_dz=(-3*u_prime_2+4*u_prime_5-u_prime_10)/8
         dv_prime_dz=(-3*v_prime_2+4*v_prime_5-v_prime_10)/8
