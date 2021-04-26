@@ -64,6 +64,8 @@ def load_processed_sonic_data(level, directory_override=None):
     :param directory_override: path to test data/nondefault data path if applicable
     :return: pandas.DataFrame
     """
+    if type(directory_override) == bool and directory_override:
+        directory_override = get_project_root() / "data/2021 Final Project Data/SonicData/select_fields/1hr"
     directory = _get_data_root_dir() / directory_override if directory_override \
         else _get_sonic_data_dir() / "select_fields"
     file = directory / ("sonic_data_" + str(level))

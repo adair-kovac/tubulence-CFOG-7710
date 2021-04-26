@@ -19,9 +19,6 @@ def compute_std_with_start_times(start_time, column_name, A, Hz=20, dt=30):
     values = std_dev(A, Hz, dt)
     return create_dataframe(column_name, dt, start_time, values)
 
-def compute_prime_with_start_times(start_time, column_name, A, A_bar, Hz=20, dt=30):
-    values = compute_prime(A, A_bar, Hz=Hz, dt=dt)
-    return create_dataframe(column_name, dt, start_time, values)
 
 def create_dataframe(column_name, dt, start_time, values):
     count = 0
@@ -49,7 +46,8 @@ def compute_avg(A, Hz=20, dt=30):
         count = 0
         for j in range(start,end):
             if np.isnan(A[j]):
-                print("Skipping value at {}, NaN".format(j))
+               # print("Skipping value at {}, NaN".format(j))
+                pass
             else:
                 A_bar[i] = A_bar[i]+A[j]
                 count += 1

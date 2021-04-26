@@ -1,6 +1,8 @@
 from utils import path_util
 import pandas as pd
 import CFOG_Q1 as cq
+import datetime
+from data import data_loader
 
 
 def main(test=True):
@@ -14,24 +16,27 @@ def main(test=True):
     for level in levels:
         input_dir = intermediate_dir / str(level)
         datasets = load_datasets(input_dir)
+        if level == 2:
+            surface_data = datasets
 
-        run_calculations(datasets, output_dir / str(level))
+        run_calculations(level, datasets, surface_data, output_dir / str(level), test)
 
 
-def run_calculations(datasets, output_dir):
+def run_calculations(height, datasets, surface_data, output_dir, test):
     w_prime = datasets["w_prime"]["w_prime"]
-    T_s_prime = datasets["T_s_prime"]["T_s"]
+    T_s_prime = datasets["T_s_prime"]["T_s_prime"]
     print("Calculating temp flux")
     flux = cq.kinematic_temp_flux(w_prime, T_s_prime)
 
-    start_time = datasets["w_prime"].iloc[0]["time"]
+    start_time = datasets["w_prime"].iloc[0]["time"] - datetime.timedelta(days=1)
     output = cq.create_dataframe("kinematic_temp_flux", dt=30, start_time=start_time, values=flux)
 
     print("Calculating friction velocity")
     u_prime = datasets["u_prime"]["u_prime"]
     v_prime = datasets["v_prime"]["v_prime"]
+    ws_prime = surface_data["w_prime"]["w_prime"]
 
-    u_star = cq.friction_velocity(u_prime, v_prime, w_prime)
+    u_star = cq.friction_velocity(u_prime, v_prime, ws_prime)
     output["friction_velocity"] = u_star
 
     print("Calculating sensible heat flux")
@@ -44,14 +49,20 @@ def run_calculations(datasets, output_dir):
     tke = cq.compute_tke(u_prime, v_prime, w_prime)
     output["tke"] = tke
 
+    print("Calculating w*")
+    temp_v_prime_surface = surface_data["T_s_prime"]["T_s_prime"] # temp is practically theta for this data
+    temp_v_bar = get_average("virtual_temp", height, test)
+    w_star = cq.convective_velocity_scale(height, temp_v_bar, ws_prime, temp_v_prime_surface)
+    output["w_star"] = w_star
+
+    print("Calculating Obukhov length")
+    L = cq.obukhov_length(temp_v_bar, u_star, ws_prime, temp_v_prime_surface)
+    output["L"] = L
+
     print("Writing results")
     output_path = output_dir / "results.csv"
     output_dir.mkdir(parents=True, exist_ok=True)
     output.to_csv(output_path, index=False, sep="\t")
-
-
-def run_level_based_calculations(datasets, output_dir):
-    pass # Todo obukhov length and deardorf velocity
 
 
 def load_datasets(intermediate_dir):
@@ -70,5 +81,24 @@ def load(path):
     return pd.read_csv(path, sep="\t", parse_dates=["time"])
 
 
+def get_average(column, level, test):
+    sonic_data = get_sonic_data(column, level, test)
+    return cq.compute_avg(sonic_data[column])
+
+
+sonic_data_cached = dict()
+def get_sonic_data(column, level, test):
+    if level in sonic_data_cached:
+        return sonic_data_cached[level]
+    test_dir = None
+    if test:
+        test_dir = path_util.get_project_root() / "data/2021 Final Project Data/SonicData/select_fields/1hr"
+    print("Loading sonic data")
+    sonic_data = data_loader.load_processed_sonic_data(level, directory_override=test_dir)
+    print("... Loaded")
+    sonic_data_cached[level] = sonic_data
+    return sonic_data
+
+
 if __name__=="__main__":
-    main(test=False)
+    main(test=True)

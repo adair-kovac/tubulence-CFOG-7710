@@ -24,10 +24,12 @@ class PlotVariables:
     output_path: Path
 
 
-def plot_variable(data_at_levels: dict, vars: PlotVariables):
+def plot_variable(data_at_levels: dict, vars: PlotVariables, only_surface=False):
     fig, ax = plt.subplots()
     for level, data in data_at_levels.items():
         plt.plot(data["time"], data[vars.column], label=level)
+        if only_surface:
+            break
     plt.legend()
     ax.set_xlabel("Time Interval Start")
     ax.set_ylabel(vars.y_label)
@@ -62,7 +64,7 @@ def main(test=True):
         y_label="Flux (K*m/s)",
         output_path=output_dir/"temp_flux.png"
     )
-    plot_variable(data, args)
+    plot_variable(data, args, only_surface=True)
 
     # friction_velocity
     print("Friction velocity")
@@ -82,7 +84,7 @@ def main(test=True):
         y_label="Flux (W/m^2)",
         output_path=output_dir/"sensible_heat_flux.png"
     )
-    plot_variable(data, args)
+    plot_variable(data, args, only_surface=True)
 
     # tke
     print("tke")
@@ -91,6 +93,26 @@ def main(test=True):
         plot_title="Turbulent Kinetic Energy (tke)",
         y_label="tke (J/kg)",
         output_path=output_dir/"tke.png"
+    )
+    plot_variable(data, args)
+
+    # w*
+    print("w*")
+    args = PlotVariables(
+        column="w_star",
+        plot_title="Deardorff/Convective Velocity (w*)",
+        y_label="w* (m/s)",
+        output_path=output_dir/"w_star.png"
+    )
+    plot_variable(data, args)
+
+    # L
+    print("L")
+    args = PlotVariables(
+        column="L",
+        plot_title="Monin-Obhukhov Length (L)",
+        y_label="L (m)",
+        output_path=output_dir/"obukhov_length.png"
     )
     plot_variable(data, args)
 

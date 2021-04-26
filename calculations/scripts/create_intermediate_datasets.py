@@ -2,7 +2,7 @@
 from data.data_loader import load_processed_sonic_data, _get_data_root_dir
 import CFOG_Q1 as cq
 from utils import path_util
-
+import pandas as pd
 
 
 def main(test=True):
@@ -28,33 +28,43 @@ def main(test=True):
 def calculate_w_prime(sonic_data, output_path):
     start_time = sonic_data.iloc[0]["time"]
     a_bar = cq.compute_avg_with_start_times(start_time, "w", sonic_data["w"])
-    a_prime = cq.compute_prime_with_start_times(start_time, "w_prime", sonic_data["w"], a_bar["w"])
-    a_prime.to_csv(output_path, index=False, sep="\t")
+    a_prime = cq.compute_prime(sonic_data["w"], a_bar["w"])
+    make_dataframe(sonic_data, a_prime, "w_prime", output_path)
+
 
 def calculate_u_prime(sonic_data, output_path):
     start_time = sonic_data.iloc[0]["time"]
     a_bar = cq.compute_avg_with_start_times(start_time, "u", sonic_data["u"])
-    a_prime = cq.compute_prime_with_start_times(start_time, "u_prime", sonic_data["u"], a_bar["u"])
-    a_prime.to_csv(output_path, index=False, sep="\t")
+    a_prime = cq.compute_prime(sonic_data["u"], a_bar["u"])
+    make_dataframe(sonic_data, a_prime, "u_prime", output_path)
 
 
 def calculate_v_prime(sonic_data, output_path):
     start_time = sonic_data.iloc[0]["time"]
     a_bar = cq.compute_avg_with_start_times(start_time, "v", sonic_data["w"])
-    a_prime = cq.compute_prime_with_start_times(start_time, "v_prime", sonic_data["v"], a_bar["v"])
-    a_prime.to_csv(output_path, index=False, sep="\t")
+    a_prime = cq.compute_prime(sonic_data["v"], a_bar["v"])
+    make_dataframe(sonic_data, a_prime, "v_prime", output_path)
+
 
 def calculate_T_prime(sonic_data, output_path):
     start_time = sonic_data.iloc[0]["time"]
     a_bar = cq.compute_avg_with_start_times(start_time, "temp", sonic_data["temp"])
-    a_prime = cq.compute_prime_with_start_times(start_time, "T_prime", sonic_data["temp"], a_bar["temp"])
-    a_prime.to_csv(output_path, index=False, sep="\t")
+    a_prime = cq.compute_prime(sonic_data["temp"], a_bar["temp"])
+    make_dataframe(sonic_data, a_prime, "T_prime", output_path)
+
 
 def calculate_T_s_prime(sonic_data, output_path):
     start_time = sonic_data.iloc[0]["time"]
     a_bar = cq.compute_avg_with_start_times(start_time, "virtual_temp", sonic_data["virtual_temp"])
-    a_prime = cq.compute_prime_with_start_times(start_time, "T_s", sonic_data["virtual_temp"], a_bar["virtual_temp"])
-    a_prime.to_csv(output_path, index=False, sep="\t")
+    a_prime = cq.compute_prime(sonic_data["virtual_temp"], a_bar["virtual_temp"])
+    make_dataframe(sonic_data, a_prime, "T_s_prime", output_path)
+
+
+def make_dataframe(sonic_data, column, column_name, output_path):
+    df = pd.DataFrame()
+    df["time"] = sonic_data["time"]
+    df[column_name] = column
+    df.to_csv(output_path, index=False, sep="\t")
 
 if __name__=="__main__":
-    main(test=False)
+    main(test=True)
