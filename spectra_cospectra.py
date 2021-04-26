@@ -54,6 +54,8 @@ def main(test=True):
         v = data["v"].dropna()
         w = data["w"].dropna()
         T = data["temp"].dropna()
+        if test:
+            T = data["virtual_temp"].dropna()
 
         output_dir = path_util.get_project_root() / "spectra"
         if test:
