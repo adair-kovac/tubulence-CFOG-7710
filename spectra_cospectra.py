@@ -1,52 +1,76 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from data import data_loader
+from utils import path_util
 
 #if calculating the energy spectrum, enter the same variable in place of variable 1 and variable 2, these have to have the same length and the same sampling frequency
+def spectra(variable1, variable2, sampling_frequency, variable_name, directory):
+    samp_f = sampling_frequency #should be 20 the campbell CSAT3 sonic anemometers
 
-def spectra(variable1, variable2, sampling_frequency, bool_spec): #if bool_spec = 1, calculation of cospectra is being performed
+    u = variable1 #redefine arbitrarily so easier to read
+    v = variable2 #redefine arbitrarily so easier to read
 
-    #set bool_sepc in the function definitions equal to 1 if you want to calculate the cospectrum
-    if bool_spec == 1:
-        continue
+    u_mean = sum(u)/len(u)
+    v_mean = sum(v)/len(v)
 
-    #if bool_spec is equal to zero we will enter the else statement and calculate the spectral energy
-    else:
+    u = u - u_mean #get rid of the mean component of the flow so we are only assessing the fluctuations within the flow
+    v = v - v_mean #get rid of the mean component of the flow so we are only assessing the fluctuations within the flow
 
-        samp_f = sampling_frequency #should be 20 the campbell CSAT3 sonic anemometers
+    N = len(u) #number of points in the data
+    N_f = len(u)//2 # nyquist number of points
 
-        u = variable1 #redefine arbitrarily so easier to read
-        v = variable2 #redefine arbitrarily so easier to read
+    n_tilda = samp_f*N_f//N #maximum reportable frequency
 
-        u_mean = sum(u)/len(u)
-        v_mean = sum(v)/len(v)
+    delta_n_tilda = samp_f/N
 
-        u = u - u_mean #get rid of the mean component of the flow so we are only assessing the fluctuations within the flow
-        v = v - v_mean #get rid of the mean component of the flow so we are only assessing the fluctuations within the flow
-        
-        N = len(u) #number of points in the data
-        N_f = len(u)//2 # nyquist number of points
+    fk_u = np.fft.fft(u) #calculate fourier coefficients
+    fk_v = np.fft.fft(v) #calculate fourier coefficients
 
-        n_tila = samp_f*N_f//N #maximum reportable frequency
+    fk_u = fk_u/len(u) #normalize by scaling by length of your time/space series
+    fk_v = fk_v/len(v) #normalize by scaling by length of your time/space series
 
-        delta_n_tilda = samp_f/N
+    Euv_f = 2*fk_u*np.conj(fk_v) # 2 * to account for the folding over of frequencies past the nyquist frequency
 
-        fk_u = np.fft(u) #calculate fourier coefficients
-        fk_v = np.fft(v) #calculate fourier coefficients
+    Suv_f = Euv_f/delta_n_tilda
 
-        fk_u = fk_u/len(u) #normalize by scaling by length of your time/space series
-        fk_v = fk_v/len(v) #normalize by scaling by length of your time/space series
+    Suv_f = Suv_f[0:N_f]
 
-        Euv_f = 2*fk_u*np.conj(fk_v) # 2 * to account for the folding over of frequencies past the nyquist frequency
+    f = np.linspace(1,n_tilda,N_f)
 
-        Suv_f = Euv_f/delta_n_tilda
+    plt.loglog(f,Suv_f)
 
-        Suv_f = Suv_f[0:N_f]
+    plt.xlabel("Frequency")
+    plt.ylabel("Power Spectral Density of {}".format(variable_name)) #insert which variable you are plugging in.
+    plt.savefig(directory / "{}-spectral-density.png".format(variable_name))
+    plt.close()
 
-        f = np.linspace(1,n_tilda,N_f)
 
-        plt.loglog(f,Suv_f)
+def main(test=True):
+    levels = [2, 5, 10]
+    for level in levels:
+        data = data_loader.load_processed_sonic_data(level, directory_override=test)
+        # u, v, w, and T
+        u = data["u"].dropna()
+        v = data["v"].dropna()
+        w = data["w"].dropna()
+        T = data["temp"].dropna()
 
-        plt.xlabel("Frequency")
-        plt.ylabel("Power Spectral Density of ________") #insert which variable you are plugging in.
-        plt.show()
+        output_dir = path_util.get_project_root() / "spectra"
+        if test:
+            output_dir = output_dir / "test"
+        output_dir = output_dir / str(level)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-spectra = np.vectorize(spectra)
+        sampling_freq = 20
+        print("u")
+        spectra(u, u, sampling_freq, "U", output_dir)
+        print("v")
+        spectra(v, v, sampling_freq, "V", output_dir)
+        print("w")
+        spectra(w, w, sampling_freq, "W", output_dir)
+        print("T")
+        spectra(T, T, sampling_freq, "Temperature", output_dir)
+
+
+if __name__=="__main__":
+    main(test=False)
