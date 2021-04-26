@@ -137,21 +137,19 @@ def convective_velocity_scale(z, theta_v_bar, ws_prime,theta_v_prime_surface, Hz
     w_star=(g*z*avg/theta_v_bar)**(1/3) # Need to edit this once z structure is known!
     return w_star
 
-def dissipation_rate(z, theta_v_bar, theta_v_prime, u_prime, v_prime, w_prime, ws_bar_2, ws_bar_5, ws_bar_10, Hz=20, dt=30):
-    # Compute dissipation rate; default to data taken at 20 Hz and 30 minute averages
-    
-    g=9.81
-    arg1=w_prime*theta_v_prime
-    arg2=u_prime*w_prime
-    avg1=compute_avg(arg1, Hz=20, dt=30)
-    avg2=compute_avg(arg2, Hz=20, dt=30)
+def dissipation_rate(nu, u_prime_2, u_prime_5, u_prime_10, v_prime_2, v_prime_5, v_prime_10, z):
+    # Compute dissipation rate
     if z==2 :
-        dU_dz=(-3*ws_bar_2+4*ws_bar_5-ws_bar_10)/8
+        du_prime_dz=(-3*u_prime_2+4*u_prime_5-u_prime_10)/8
+        dv_prime_dz=(-3*v_prime_2+4*v_prime_5-v_prime_10)/8
     elif z==5 :
-        dU_dx=(ws_bar_10-ws_bar_2)/8
+        du_prime_dz=(u_prime_10-u_prime_2)/8
+        dv_prime_dz=(v_prime_10-v_prime_2)/8
     elif z==10 :
-        dU_dz=(3*ws_bar_10-4*ws_bar_5+ws_bar_2)/8
-    epsilon=((g/theta_v_bar)*avg1)-(avg2*dU_dz)
+        du_prime_dz=(3*u_prime_10-4*u_prime_5+u_prime_2)/8
+        dv_prime_dz=(3*v_prime_10-4*v_prime_5+v_prime_2)/8
+    epsilon=nu*((du_prime_dz**2)+(dv_prime_dz**2))
+    
     return epsilon
 
 def kolmogorov_length(nu, epsilon):
