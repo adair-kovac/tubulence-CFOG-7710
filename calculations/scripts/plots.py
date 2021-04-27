@@ -31,7 +31,7 @@ def plot_variable(data_at_levels: dict, vars: PlotVariables, only_surface=False)
         if only_surface:
             break
     plt.legend()
-    ax.set_xlabel("Time Interval Start")
+    # ax.set_xlabel("Time Interval Start")
     ax.set_ylabel(vars.y_label)
     ax.xaxis.set_major_locator(plt.MaxNLocator(5))
     plt.title(vars.plot_title)
@@ -117,5 +117,39 @@ def main(test=True):
     plot_variable(data, args)
 
 
+def make_non_virtual_temp_plots():
+    input_dir = path_util.get_project_root() / "calculations" / "calc_from_intermediate"
+
+    levels = [2]
+    data = dict()
+    print("Loading data")
+    for level in levels:
+        level_input_dir = input_dir / str(level)
+        data[level] = pd.read_csv(level_input_dir / "results-temp.csv", sep="\t", parse_dates=["time"])
+
+    output_dir = input_dir / "plots"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    #kinematic_temp_flux
+    print("Kinematic temp flux")
+    args = PlotVariables(
+        column="kinematic_temp_flux",
+        plot_title="Kinematic Temperature Flux (cov T, w)",
+        y_label="Flux (K*m/s)",
+        output_path=output_dir/"temp_flux.png"
+    )
+    plot_variable(data, args, only_surface=True)
+
+    # H_s
+    print("H_s")
+    args = PlotVariables(
+        column="H_s",
+        plot_title="Sensible Heat Flux (H_s)",
+        y_label="Flux (W/m^2)",
+        output_path=output_dir/"sensible_heat_flux.png"
+    )
+    plot_variable(data, args, only_surface=True)
+
 if __name__=="__main__":
-    main(test=False)
+    # main(test=False)
+    make_non_virtual_temp_plots()

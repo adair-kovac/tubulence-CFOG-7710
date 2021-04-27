@@ -74,6 +74,7 @@ def run_stats(T_comp, u_comp, v_comp, w_comp, directory):
     plt.ticklabel_format(
         useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
     plt.xlabel("U (m/s)")  # change this to you variable of interest
+    plt.xlim(-12, 5)
     plt.ylabel("Frequency")
     plt.grid()
     plt.legend()
@@ -126,6 +127,7 @@ def run_stats(T_comp, u_comp, v_comp, w_comp, directory):
     plt.ticklabel_format(
         useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
     plt.xlabel("V (m/s)")  # change this to you variable of interest
+    plt.xlim(-12, 5)
     plt.ylabel("Frequency")
     plt.grid()
     plt.legend()
@@ -178,6 +180,7 @@ def run_stats(T_comp, u_comp, v_comp, w_comp, directory):
     plt.ticklabel_format(
         useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
     plt.xlabel("W (m/s)")  # change this to you variable of interest
+    plt.xlim(-3, 3)
     plt.ylabel("Frequency")
     plt.grid()
     plt.legend()
@@ -230,6 +233,7 @@ def run_stats(T_comp, u_comp, v_comp, w_comp, directory):
     plt.ticklabel_format(
         useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
     plt.xlabel("T (K)")  # change this to you variable of interest
+    plt.xlim(9, 18)
     plt.ylabel("Frequency")
     plt.grid()
     plt.legend()

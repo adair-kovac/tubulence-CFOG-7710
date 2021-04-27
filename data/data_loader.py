@@ -21,7 +21,7 @@ def load_raw_visibility_data():
         header = header[:-5] + ["1", "2", "3", "4", "5"]  # replacing - columns
     data = _load_visibility_file(visibility_path, header, "PWD_180913.dat")
     data2 = _load_visibility_file(visibility_path, header, "PWD_180914.dat")
-    data.append(data2)
+    data = data.append(data2)
     data = data[["time", "Vis1Min",	"Vis10Min"]]
     data.columns = ["time", "vis_1_min",	"vis_10_min"]
     return data
