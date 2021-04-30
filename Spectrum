@@ -1,0 +1,157 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import scipy.stats as stats
+
+
+file = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_5'
+
+df = pd.read_csv(file, sep="\t", index_col=0)
+print(df)
+
+#if calculating the energy spectrum, enter the same variable in place of variable 1 and variable 2, these have to have the same length and the same sampling frequency
+
+
+U = df['u'].dropna()
+U = np.array(U)[0:432000] #fog event duration is roughly from midnight to morning 20Hz*60Sec*60min*6hours = 432000
+V = df['v'].dropna()
+V = np.array(V)[0:432000]
+W = df['w'].dropna()
+W = np.array(W)[0:432000]
+T = df['temp'].dropna()
+T = np.array(T)[0:432000]
+
+
+def spectra(variable1, variable2, sampling_frequency, bool_spec): #if bool_spec = 1, calculation of cospectra is being performed
+
+    samp_f = sampling_frequency #should be 20 the campbell CSAT3 sonic anemometers
+
+    u = np.array(variable1) #redefine arbitrarily so easier to read
+    #print(u)
+    v = np.array(variable2) #redefine arbitrarily so easier to read
+    #print(v)
+
+    u_mean = np.mean(u)
+    #print(u_mean)
+    v_mean = np. mean(v)
+    #print(v_mean)
+
+    u = u - u_mean #get rid of the mean component of the flow so we are only assessing the fluctuations within the flow
+    v = v - v_mean #get rid of the mean component of the flow so we are only assessing the fluctuations within the flow
+        
+    N = len(u) #number of points in the data
+    N_f = len(u)//2 # nyquist number of points
+
+    n_tilda = samp_f*N_f//N #maximum reportable frequency
+
+    delta_n_tilda = samp_f/N
+
+    fk_u = np.fft.fft(u) #calculate fourier coefficients
+    fk_v = np.fft.fft(v) #calculate fourier coefficients
+
+    fk_u = fk_u/len(u) #normalize by scaling by length of your time/space series
+    fk_v = fk_v/len(v) #normalize by scaling by length of your time/space series
+
+
+
+    #set bool_sepc in the function definitions equal to 1 if you want to calculate the cospectrum
+    if bool_spec == 1:
+
+        #read J.C. WYNGAARD 1971 or 1972 
+
+        Euv_f = fk_u*np.conj(fk_v) # 2 * to account for the folding over of frequencies past the nyquist frequency
+        Euv_f = Euv_f.real #for calculating the cospectrum, we only care about the real portion.
+
+        var = sum(Euv_f)
+        print("The Flux Calculated from the Spectrum is ", float(var))
+
+        Euv_f = 2*Euv_f[1:N_f]
+
+        for i in range(len(Euv_f)):
+            if Euv_f[i] < 10**(-13):
+                Euv_f[i] = np.nan
+
+        f = np.linspace(0.0000001,n_tilda,N_f-1)
+
+        Euv_f1 = Euv_f.real
+        print(Euv_f1)
+        #FOR FUTURE REFERENCE: Find a better way to find inertial subrange other than just saying its definitely not in the first half of the wavenumbers LOL
+        logx = np.log(f[len(f)//2:-1]) #lets fit the regression to only the second half of the data because the first half contains inertial range... could probably calculation in the future the integral lenght scale and use that as the cutoff instread of arbitrarily doing it
+        logy = np.log(Euv_f1[len(f)//2:-1])  #lets fit the regression to only the second half of the data
+
+        mask = ~np.isnan(logx) & ~np.isnan(logy) #literally have no idea what this means but found it on stack, romoves indices that have NAN so you can calculate the stats
+
+        slope, intercept, r, p, se = stats.linregress(logx[mask], logy[mask]) # review equation for line in a loglog plot and rules of expononets for getting coefficients
+
+        print(slope)
+        print(intercept) #use the intercept as the scalar for the -5/3 power law and you get your perfect line going best fit through your spectral data
+
+        print(np.exp(intercept))
+
+
+        _f_ = []
+        for i in f:
+            _f_.append(np.exp(intercept)*i**(-7/3))
+
+        labela = "exp("+str('{0:.3g}'.format(intercept))+")*"
+        labelb = "f^(-7/3)"
+
+
+        plt.loglog(f,Euv_f)
+        plt.loglog(f,_f_,"r-", label = labela+labelb)
+        plt.xlabel("Frequency")
+        plt.ylabel("S_vw") #insert which variable you are plugging in.
+        plt.legend()
+        plt.title("Cospectrum")
+        plt.show()
+
+    #if bool_spec is equal to zero we will enter the else statement and calculate the spectral energy
+    else:
+
+        
+        Euv_f = fk_u*np.conj(fk_v) # 2 * to account for the folding over of frequencies past the nyquist frequency
+        #print(Euv_f)
+
+        var = sum(Euv_f)
+        print("The Variance Calculated from the Spectrum is ", float(var))
+
+        mean_u = np.mean(U)
+        U_var = sum((x-mean_u)**2 for x in U)/(N-1) #calcuw_compion of variance from squaring the fluctuations
+
+        print("The Variance calculated from second moment is:", U_var)
+
+        Euv_f = 2*Euv_f[1:N_f]
+
+        f = np.linspace(0.0000001,n_tilda,N_f-1)
+        
+        Euv_f1 = Euv_f.real
+        logx = np.log(f[len(f)//2:-1]) #lets fit the regression to only the second half of the data because the first half contains inertial range... could probably calculation in the future the integral lenght scale and use that as the cutoff instread of arbitrarily doing it
+        logy = np.log(Euv_f1[len(f)//2:-1])  #lets fit the regression to only the second half of the data
+
+        slope, intercept, r, p, se = stats.linregress(logx, logy) # review equation for line in a loglog plot and rules of expononets for getting coefficients
+
+        print(slope)
+        print(intercept) #use the intercept as the scalar for the -5/3 power law and you get your perfect line going best fit through your spectral data
+
+
+        f_ = []
+        for i in f:
+            f_.append(np.exp(intercept)*i**(-5/3)) # plot the -5/3 log with the lazily calibrated Kolmogorov constant
+
+        labela = "exp("+str('{0:.3g}'.format(intercept))+")*"
+        labelb = "f^(-5/3)"
+
+        plt.loglog(f,Euv_f)
+        plt.loglog(f,f_,"r-", label = labela+labelb)
+        plt.xlabel("Frequency")
+        plt.ylabel("S_TT") #insert which variable you are plugging in.
+        plt.title("Power Spectral Density") #insert which variable you are plugging in.
+        plt.legend()
+        plt.show()
+
+#Set function declaration 4 equal 1 if you want cospectra
+#spectra(V,W,20,1) # play around with which variable you want, you will need to change the labels
+                   # in you plots so they are the same as your input variable
+spectra(T,T,20,0)
+
+    
