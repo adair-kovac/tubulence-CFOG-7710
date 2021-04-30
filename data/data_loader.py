@@ -5,7 +5,7 @@ import mat4py
 from data import time_format
 from data import wind_coordinate
 import numpy as np
-
+import datetime
 
 
 def load_raw_visibility_data():
@@ -71,6 +71,9 @@ def load_processed_sonic_data(level, directory_override=None):
     file = directory / ("sonic_data_" + str(level))
     try:
         df = pd.read_csv(file, sep="\t", parse_dates=["time"], index_col=0)
+        df["time"] = df["time"] - datetime.timedelta(days=366)
+        # df = df[(df["time"] >= pd.Timestamp('2018-09-13 21:00:00')) & (df["time"] <=
+        #         pd.Timestamp('2018-09-14 06:00:00'))]
         return df
     except FileNotFoundError as e:
         _handle_file_not_found(e, "select_fields")

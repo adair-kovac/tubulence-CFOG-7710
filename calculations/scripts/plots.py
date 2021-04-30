@@ -7,13 +7,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from utils import  path_util
 
-def setup_matplotlib():
-    import matplotlib.units as munits
-    converter = mdates.ConciseDateConverter()  # formats=['', '', '%d', '%H', '', ''])
-    munits.registry[np.datetime64] = converter
-    munits.registry[datetime.date] = converter
-    munits.registry[datetime.datetime] = converter
-    munits.registry[pd.Timestamp] = converter
+# def setup_matplotlib():
+#     import matplotlib.units as munits
+#
+#     converter = mdates.ConciseDateFormatter(mdates.AutoDateLocator)
+#     munits.registry[np.datetime64] = converter
+#     munits.registry[datetime.date] = converter
+#     munits.registry[datetime.datetime] = converter
+#     munits.registry[pd.Timestamp] = converter
 
 
 @dataclass
@@ -31,9 +32,11 @@ def plot_variable(data_at_levels: dict, vars: PlotVariables, only_surface=False)
         if only_surface:
             break
     plt.legend()
-    # ax.set_xlabel("Time Interval Start")
+    ax.set_xlabel("Time Interval Start")
     ax.set_ylabel(vars.y_label)
-    ax.xaxis.set_major_locator(plt.MaxNLocator(5))
+    plt.xlim(pd.Timestamp('2018-09-13 21:00:00'), pd.Timestamp('2018-09-14 06:00:00'))
+  #  ax.xaxis.set_major_locator(mdates.HourLocator(interval=3))
+    ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(mdates.HourLocator(interval=3)))
     plt.title(vars.plot_title)
     plt.savefig(vars.output_path)
     plt.close()
@@ -91,7 +94,7 @@ def main(test=True):
     args = PlotVariables(
         column="tke",
         plot_title="Turbulent Kinetic Energy (tke)",
-        y_label="tke (J/kg)",
+        y_label="tke (m^2/s^2)",
         output_path=output_dir/"tke.png"
     )
     plot_variable(data, args)
@@ -110,7 +113,7 @@ def main(test=True):
     print("L")
     args = PlotVariables(
         column="L",
-        plot_title="Monin-Obhukhov Length (L)",
+        plot_title="Monin-Obukhov Length (L)",
         y_label="L (m)",
         output_path=output_dir/"obukhov_length.png"
     )
@@ -151,5 +154,5 @@ def make_non_virtual_temp_plots():
     plot_variable(data, args, only_surface=True)
 
 if __name__=="__main__":
-    # main(test=False)
-    make_non_virtual_temp_plots()
+    main(test=False)
+   # make_non_virtual_temp_plots()

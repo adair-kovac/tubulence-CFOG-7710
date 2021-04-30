@@ -8,7 +8,6 @@ import numpy as np
 import datetime
 
 def main():
-    setup_matplotlib()
     config = Config()
     levels = [2, 5, 10]
 
@@ -23,21 +22,42 @@ def main():
                 globals()["plot_" + calculation + "_from_saved_data"](config, levels)
 
 
-def setup_matplotlib():
-    import matplotlib.units as munits
-    converter = mdates.ConciseDateConverter()  # formats=['', '', '%d', '%H', '', ''])
-    munits.registry[np.datetime64] = converter
-    munits.registry[datetime.date] = converter
-    munits.registry[datetime.datetime] = converter
-    munits.registry[pd.Timestamp] = converter
-
-
 def plot_w_avg_from_saved_data(config, levels):
     plot_var_avg_from_saved_data("w", config, levels)
 
 
 def run_w_avg(config, sonic_data_sets):
     run_var_average("w", "w", config, sonic_data_sets)
+
+def plot_speed_avg_from_saved_data(config, levels):
+    plot_var_avg_from_saved_data("speed", config, levels)
+
+
+def run_speed_avg(config, sonic_data_sets):
+    run_var_average("speed", "speed", config, sonic_data_sets)
+
+
+def plot_u_avg_from_saved_data(config, levels):
+    plot_var_avg_from_saved_data("u", config, levels)
+
+
+def run_u_avg(config, sonic_data_sets):
+    run_var_average("u", "u", config, sonic_data_sets)
+
+def plot_dir_avg_from_saved_data(config, levels):
+    plot_var_avg_from_saved_data("direction", config, levels)
+
+
+def run_dir_avg(config, sonic_data_sets):
+    run_var_average("direction", "direction", config, sonic_data_sets)
+
+
+def plot_v_avg_from_saved_data(config, levels):
+    plot_var_avg_from_saved_data("v", config, levels)
+
+
+def run_v_avg(config, sonic_data_sets):
+    run_var_average("v", "v", config, sonic_data_sets)
 
 
 def run_T_avg(config, sonic_data_sets):
@@ -75,7 +95,8 @@ def plot_variable_avg(variable, averages, config):
     plt.legend()
     ax.set_xlabel("Time Interval Start")
     ax.set_ylabel(config.config["calculations"]["{}_avg".format(variable)]["y_label"])
-    ax.xaxis.set_major_locator(plt.MaxNLocator(5))
+    plt.xlim(pd.Timestamp('2018-09-13 21:00:00'), pd.Timestamp('2018-09-14 06:00:00'))
+    ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(mdates.HourLocator(interval=3)))
     plt.title("30-Minute Averages - {}".format(variable))
     plt.savefig(config.get_figure_output_dir() / "{}_avg.png".format(variable))
     plt.close()

@@ -1,6 +1,6 @@
 # Starts from the project_root_dir in utils.path_utils
 output_dirs:
-  root: calculations/keep1
+  root: calculations/keep2
   data: data
   figures: figures
 
@@ -14,6 +14,22 @@ calculations:
     enabled: True
     only_plot: False
     y_label: "Average Vertical Windspeed (m/s)"
+  speed_avg:
+    enabled: True
+    only_plot: False
+    y_label: "Average Horizontal Windspeed (m/s)"
+  u_avg:
+    enabled: True
+    only_plot: False
+    y_label: "Average U (m/s)"
+  v_avg:
+    enabled: True
+    only_plot: False
+    y_label: "Average V (m/s)"
+  dir_avg:
+    enabled: True
+    only_plot: False
+    y_label: "Average Direction (degrees from North)"
   T_avg:
     enabled: True
     y_label: "Average Temperature (degC)"

@@ -6,6 +6,7 @@ from data import data_loader
 from calculations.scripts.calculations_from_intermediates import load_datasets, get_start_time
 from calculations.scripts.plots import PlotVariables, plot_variable
 from utils import path_util
+import matplotlib.dates as mdates
 
 
 def main(test=True):
@@ -45,7 +46,7 @@ def plot_dissipation_rate(dissipation_rates, output_dir):
     args = PlotVariables(
         column="dissipation_rate",
         plot_title="Dissipation Rate",
-        y_label="Dissipation Rate (W/kg)",
+        y_label="Dissipation Rate (m^2/s^3)",
         output_path=output_dir / "dissipation_rate.png"
     )
     plot_variable(dissipation_rates, args)
@@ -69,7 +70,7 @@ def plot_variable_for_fog_events(data_at_levels: dict, vars: PlotVariables):
         plt.axvline(line, color="green")
 
     plt.xlim(pd.Timestamp('2018-09-13 21:00:00'), pd.Timestamp('2018-09-14 06:30:00'))
-    ax.xaxis.set_major_locator(plt.MaxNLocator(5))
+    ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(mdates.HourLocator()))
     plt.title(vars.plot_title)
     plt.savefig(vars.output_path)
     plt.close()

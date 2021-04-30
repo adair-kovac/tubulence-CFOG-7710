@@ -20,10 +20,10 @@ def main(test=True):
         if level == 2:
             surface_data = datasets
 
-        run_calculations(level, datasets, surface_data, output_dir / str(level), test)
+     #   run_calculations(level, datasets, surface_data, output_dir / str(level), test)
 
-    #     tke_10_min_sets[level] = calculate_tke_10_min(datasets, tke_output_dir / str(level))
-    # plot_tke_10_min(tke_10_min_sets, tke_output_dir)
+        tke_10_min_sets[level] = calculate_tke_10_min(datasets, tke_output_dir / str(level))
+    plot_tke_10_min(tke_10_min_sets, tke_output_dir)
 
 
 def calculate_tke_10_min(datasets, output_dir):
@@ -47,7 +47,7 @@ def plot_tke_10_min(datasets, output_dir):
     args = PlotVariables(
         column="tke",
         plot_title="Turbulent Kinetic Energy (tke)",
-        y_label="tke (J/kg)",
+        y_label="tke (m^2/s^2)",
         output_path=output_dir/"tke.png"
     )
     plot_variable(datasets, args)
@@ -62,10 +62,10 @@ def run_calculations(height, datasets, surface_data, output_dir, test):
     start_time = get_start_time(datasets)
     output = cq.create_dataframe("kinematic_temp_flux", dt=30, start_time=start_time, values=flux)
 
-    print("Calculating friction velocity")
+    # print("Calculating friction velocity")
     u_prime = datasets["u_prime"]["u_prime"]
     v_prime = datasets["v_prime"]["v_prime"]
-    ws_prime = surface_data["w_prime"]["w_prime"]
+    # ws_prime = surface_data["w_prime"]["w_prime"]
 
     # u_star = cq.friction_velocity(u_prime, v_prime, ws_prime)
     # output["friction_velocity"] = u_star
@@ -76,22 +76,22 @@ def run_calculations(height, datasets, surface_data, output_dir, test):
     # heat_flux = cq.sensible_heat_flux(flux, rho, c_p)
     # output["H_s"] = heat_flux
     #
-    # print("Calculating TKE")
-    # tke = cq.compute_tke(u_prime, v_prime, w_prime)
-    # output["tke"] = tke
+    print("Calculating TKE")
+    tke = cq.compute_tke(u_prime, v_prime, w_prime)
+    output["tke"] = tke
 
-    print("Calculating w*")
-    temp_v_prime_surface = surface_data["T_s_prime"]["T_s_prime"] # temp is practically theta for this data
-    temp_v_bar = get_average("virtual_temp", height, test) + 273.15
-    w_star = cq.convective_velocity_scale(1000, temp_v_bar, ws_prime, temp_v_prime_surface)
-    output["w_star"] = w_star
+    # print("Calculating w*")
+    # temp_v_prime_surface = surface_data["T_s_prime"]["T_s_prime"] # temp is practically theta for this data
+    # temp_v_bar = get_average("virtual_temp", height, test) + 273.15
+    # w_star = cq.convective_velocity_scale(1000, temp_v_bar, ws_prime, temp_v_prime_surface)
+    # output["w_star"] = w_star
 
     # print("Calculating Obukhov length")
     # L = cq.obukhov_length(temp_v_bar, u_star, ws_prime, temp_v_prime_surface)
     # output["L"] = L
 
     print("Writing results")
-    output_path = output_dir / "results-w*.csv"
+    output_path = output_dir / "results-tke.csv"
     output_dir.mkdir(parents=True, exist_ok=True)
     output.to_csv(output_path, index=False, sep="\t")
 
@@ -108,6 +108,7 @@ def load_datasets(intermediate_dir):
     datasets["u_prime"] = load(intermediate_dir / "u_prime.csv")
     datasets["v_prime"] = load(intermediate_dir / "v_prime.csv")
     datasets["w_prime"] = load(intermediate_dir / "w_prime.csv")
+
     print("Datasets loaded")
     return datasets
 
