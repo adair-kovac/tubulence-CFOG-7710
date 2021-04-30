@@ -3,12 +3,18 @@ import pandas as pd
 import numpy as np
 import math
 import scipy.stats as stats
+from utils import path_util
 
 
 
 file1 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_2'
 file2 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_5'
 file3 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_10'
+
+# file_dir = path_util.get_project_root() / "data" / "2021 Final Project Data" / "SonicData" / "select_fields"
+# file1 = file_dir / "sonic_data_2"
+# file2 = file_dir / "sonic_data_5"
+# file3 = file_dir / "sonic_data_10"
 
 sonic2 = pd.read_csv(file1, sep="\t", index_col=0)
 print(sonic2)
@@ -50,27 +56,34 @@ print(np.nanmean(v5))
 
 def comp_stats(u_comp,v_comp, w_comp):
 
+
     for i in range(len(u_comp)):
         if u_comp[i] < 10 or u_comp[i] > 25:
-            u_comp[i] = 0
+            u_comp[i] = math.nan
     for i in range(len(v_comp)):
         if v_comp[i] < 10 or v_comp[i] > 25:
-            v_comp[i] = 0
+            v_comp[i] = math.nan
     for i in range(len(w_comp)):
         if w_comp[i] < 10 or w_comp[i] > 25:
-            w_comp[i] = 0
-    
+            w_comp[i] = math.nan
+
+    def drop_nan(array):
+        return array[np.logical_not(np.isnan(array))]
+    u_comp = drop_nan(u_comp)
+    v_comp = drop_nan(v_comp)
+    w_comp = drop_nan(w_comp)
+
 
     N = len(u_comp) # number of measurements in column
     u_comp_mean = sum(u_comp)/N # mean of measurements
 
-    #list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    u_comp_fluc = [x-u_comp_mean for x in u_comp] # fluctuation of each measurement
-
-    u_comp_var = sum(x**2 for x in u_comp_fluc)/(N-1) #calcuu_compion of variance from squaring the fluctuations
-    u_comp_std = u_comp_var**(1/2) # the square root of the variance is the standard deviation
-    u_comp_skew = sum(x**3 for x in u_comp_fluc)/((N-1)*u_comp_std**3) #calcuu_compion of skewness (the third moment) using list comprehension
-    u_comp_kurt = (sum((x-u_comp_mean)**4 for x in u_comp)/u_comp_std**4/N)-3 #calcuu_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
+    u_comp_fluc = fluctuations(u_comp, u_comp_mean)
+    u_comp_var = variance(N, u_comp_fluc)
+    u_comp_std = standard_deviation(u_comp_var)
+    u_comp_skew = skew(N, u_comp_fluc,
+                       u_comp_std)
+    u_comp_kurt = kurtosis(N, u_comp, u_comp_mean,
+                           u_comp_std)
 
     print("The first moment of the data is: ", u_comp_mean)
     print("The second moment of the data is: ", u_comp_var)
@@ -118,12 +131,14 @@ def comp_stats(u_comp,v_comp, w_comp):
     v_comp_mean = sum(v_comp)/N # mean of measurements
 
     #list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    v_comp_fluc = [x-v_comp_mean for x in v_comp] # fluctuation of each measurement
+    v_comp_fluc = fluctuations(v_comp, v_comp_mean)  # fluctuation of each measurement
 
-    v_comp_var = sum(x**2 for x in v_comp_fluc)/(N-1) #calcuv_compion of variance from squaring the fluctuations
-    v_comp_std = v_comp_var**(1/2) # the square root of the variance is the standard deviation
-    v_comp_skew = sum(x**3 for x in v_comp_fluc)/((N-1)*v_comp_std**3) #calcuv_compion of skewness (the third moment) using list comprehension
-    v_comp_kurt = (sum((x-v_comp_mean)**4 for x in v_comp)/v_comp_std**4/N)-3 #calcuv_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
+    v_comp_var = variance(N, v_comp_fluc)  #calcuv_compion of variance from squaring the fluctuations
+    v_comp_std = standard_deviation(v_comp_var)  # the square root of the variance is the standard deviation
+    v_comp_skew = skew(N, v_comp_fluc,
+                       v_comp_std)
+    v_comp_kurt = kurtosis(N, v_comp, v_comp_mean,
+                           v_comp_std)  #calcuv_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
 
     print("The first moment of the data is: ", v_comp_mean)
     print("The second moment of the data is: ", v_comp_var)
@@ -171,11 +186,13 @@ def comp_stats(u_comp,v_comp, w_comp):
     w_comp_mean = sum(w_comp)/N # mean of measurements
 
     #list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    w_comp_fluc = [x-w_comp_mean for x in w_comp] # fluctuation of each measurement
-    w_comp_var = sum(x**2 for x in w_comp_fluc)/(N-1) #calcuw_compion of variance from squaring the fluctuations
-    w_comp_std = w_comp_var**(1/2) # the square root of the variance is the standard deviation
-    w_comp_skew = sum(x**3 for x in w_comp_fluc)/((N-1)*w_comp_std**3) #calcuw_compion of skewness (the third moment) using list comprehension
-    w_comp_kurt = (sum((x-w_comp_mean)**4 for x in w_comp)/w_comp_std**4/N)-3 #calcuw_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
+    w_comp_fluc = fluctuations(w_comp, w_comp_mean)
+    w_comp_var = variance(N, w_comp_fluc)  #calcuw_compion of variance from squaring the fluctuations
+    w_comp_std = standard_deviation(w_comp_var)
+    w_comp_skew = skew(N, w_comp_fluc,
+                       w_comp_std)  #calcuw_compion of skewness (the third moment) using list comprehension
+    w_comp_kurt = kurtosis(N, w_comp, w_comp_mean,
+                           w_comp_std)
 
     print("The first moment of the data is: ", w_comp_mean)
     print("The second moment of the data is: ", w_comp_var)
@@ -235,6 +252,37 @@ def comp_stats(u_comp,v_comp, w_comp):
     plt.title("Temperature During Fog Event")
     plt.legend(loc = "upper left")
     plt.show()
-    
+
+
+def standard_deviation(variance):
+    """
+    the square root of the variance is the standard deviation
+    """
+    return variance ** (1 / 2)
+
+
+def variance(N, fluctuations):
+    return sum(x ** 2 for x in fluctuations) / (N - 1)
+
+
+def fluctuations(data, mean):
+    return [x - mean for x in data]
+
+
+def skew(N, fluctuations, std):
+    """
+    calculate skewness (the third moment) using list comprehension
+    """
+    return sum(x ** 3 for x in fluctuations) / ((N - 1) * std ** 3)
+
+
+def kurtosis(N, data, mean, std):
+    """
+    calculate kurtosis (the fourth moment) using list comprehension, the minus 3 is because the
+    normal distribution has a value of 3... therefore the value returned from your data is in reference
+    to the kurtosis of the normal distribution.
+    """
+    return (sum((x - mean) ** 4 for x in data) / std ** 4 / N) - 3
+
 
 U = comp_stats(T2,T5,T10)
