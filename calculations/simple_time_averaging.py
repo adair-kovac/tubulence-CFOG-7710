@@ -91,7 +91,7 @@ def run_var_average(variable, column, config, sonic_data_sets):
 def plot_variable_avg(variable, averages, config):
     fig, ax = plt.subplots()
     for level, data in averages.items():
-        plt.plot(data["start_time"], data[variable], label=level)
+        plt.plot(data["time"], data[variable], label=level)
     plt.legend()
     ax.set_xlabel("Time Interval Start")
     ax.set_ylabel(config.config["calculations"]["{}_avg".format(variable)]["y_label"])
