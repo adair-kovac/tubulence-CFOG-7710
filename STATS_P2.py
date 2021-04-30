@@ -48,7 +48,7 @@ print(np.nanmean(u5))
 print(np.nanmean(v5))
 
 
-def comp_stats(u_comp,v_comp, w_comp):
+def comp_stats(u_comp,v_comp, w_comp): #ignore the terrible naming, this is a generic funciton that will calculatie all the plots for any three indep 1-d array
 
     for i in range(len(u_comp)):
         if u_comp[i] < 10 or u_comp[i] > 25:
