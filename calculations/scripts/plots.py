@@ -28,6 +28,8 @@ class PlotVariables:
 def plot_variable(data_at_levels: dict, vars: PlotVariables, only_surface=False):
     fig, ax = plt.subplots()
     for level, data in data_at_levels.items():
+        data = data[(data["time"] >= pd.Timestamp('2018-09-13 21:00:00')) &
+                    (data["time"] <= pd.Timestamp('2018-09-14 06:00:00'))]
         plt.plot(data["time"], data[vars.column], label=level)
         if only_surface:
             break
@@ -37,6 +39,11 @@ def plot_variable(data_at_levels: dict, vars: PlotVariables, only_surface=False)
     plt.xlim(pd.Timestamp('2018-09-13 21:00:00'), pd.Timestamp('2018-09-14 06:00:00'))
   #  ax.xaxis.set_major_locator(mdates.HourLocator(interval=3))
     ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(mdates.HourLocator(interval=3)))
+
+    from calculations.simple_time_averaging import get_dissipation_formation_times
+    dissipation, formation = get_dissipation_formation_times()
+    for line1, line2 in zip(formation, dissipation):
+        ax.axvspan(line1, line2, alpha=0.2, color='blue')
     plt.title(vars.plot_title)
     plt.savefig(vars.output_path)
     plt.close()

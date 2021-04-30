@@ -7,23 +7,23 @@ output_dirs:
 # Starts from the data_root_dir in data_loader
 sonic_data_dir: SonicData/select_fields
 
-only_plots: False
+only_plots: True
 
 calculations:
   w_avg:
-    enabled: False
+    enabled: True
     only_plot: False
     y_label: "Average Vertical Windspeed (m/s)"
   speed_avg:
-    enabled: False
+    enabled: True
     only_plot: False
     y_label: "Average Horizontal Windspeed (m/s)"
   u_avg:
-    enabled: False
+    enabled: True
     only_plot: False
     y_label: "Average U (m/s)"
   v_avg:
-    enabled: False
+    enabled: True
     only_plot: False
     y_label: "Average V (m/s)"
   dir_avg:
