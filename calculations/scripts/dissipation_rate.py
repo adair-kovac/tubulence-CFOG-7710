@@ -22,10 +22,13 @@ def main(test=True):
         datasets[level] = load_datasets(input_dir)
 
     dissipation_rates = dict()
+    etas = dict()
     for level in levels:
         dissipation_rates[level] = calculate_dissipation_rate(datasets, level)
+        etas[level] = calculate_kolmogorov_length(dissipation_rates[level])
     output_dir.mkdir(parents=True, exist_ok=True)
     plot_dissipation_rate(dissipation_rates, output_dir)
+    plot_eta(etas, output_dir)
 
 
 def calculate_dissipation_rate(datasets, level):
@@ -41,6 +44,15 @@ def calculate_dissipation_rate(datasets, level):
     df["dissipation_rate"] = rate
     return df
 
+def calculate_kolmogorov_length(dissipation_rate_df):
+    nu = 1.5 * (10 ** -5)
+    eta = cq.kolmogorov_length(nu, dissipation_rate_df["dissipation_rate"])
+    df = pd.DataFrame()
+    df["time"] = dissipation_rate_df["time"]
+    df["eta"] = eta
+    return df
+
+
 def plot_dissipation_rate(dissipation_rates, output_dir):
     print("making plot")
     args = PlotVariables(
@@ -52,6 +64,17 @@ def plot_dissipation_rate(dissipation_rates, output_dir):
     plot_variable(dissipation_rates, args)
     args.output_path = output_dir / "dissipation_rate_fog_events.png"
     plot_variable_for_fog_events(dissipation_rates, args)
+
+
+def plot_eta(etas, output_dir):
+    print("making plot")
+    args = PlotVariables(
+        column="eta",
+        plot_title="Kolmogorov Length",
+        y_label="Eta (mm)", # I don't know why the axis units aren't coming out right and can't fix it
+        output_path=output_dir / "kolmogorov.png"
+    )
+    plot_variable(etas, args)
 
 
 def plot_variable_for_fog_events(data_at_levels: dict, vars: PlotVariables):

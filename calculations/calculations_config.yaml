@@ -11,19 +11,19 @@ only_plots: False
 
 calculations:
   w_avg:
-    enabled: True
+    enabled: False
     only_plot: False
     y_label: "Average Vertical Windspeed (m/s)"
   speed_avg:
-    enabled: True
+    enabled: False
     only_plot: False
     y_label: "Average Horizontal Windspeed (m/s)"
   u_avg:
-    enabled: True
+    enabled: False
     only_plot: False
     y_label: "Average U (m/s)"
   v_avg:
-    enabled: True
+    enabled: False
     only_plot: False
     y_label: "Average V (m/s)"
   dir_avg:

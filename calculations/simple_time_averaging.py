@@ -49,7 +49,7 @@ def plot_dir_avg_from_saved_data(config, levels):
 
 
 def run_dir_avg(config, sonic_data_sets):
-    run_var_average("direction", "direction", config, sonic_data_sets)
+    run_var_average("dir", "direction", config, sonic_data_sets)
 
 
 def plot_v_avg_from_saved_data(config, levels):
