@@ -109,7 +109,7 @@ def comp_stats(u_comp,v_comp, w_comp): #ignore the terrible naming, this is a ge
             cdf[i] = pdf1[i]
         else:
             cdf[i] = cdf[i-1]+pdf1[i]
-    cdf1 = cdf/((len(x1)-1)/(25-10)) #multiply by spacial step
+    cdf1 = cdf/((len(x1)-1)/(25-10)) #multiply by spatial step
 
     #plot simple histogram
     bin_num = 50
