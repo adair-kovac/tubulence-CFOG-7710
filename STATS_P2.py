@@ -1,246 +1,240 @@
-## ------------------------------------------ C.B. Matt Huckins --------------------------------------------------------
-
+import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 import math
 import scipy.stats as stats
-import matplotlib.pyplot as plt
-from scipy.stats import norm
-from utils.path_util import get_project_root
-from data import data_loader
-
-def main():
-
-    u_comp = np.random.normal(5, 1, 1000) #rename column 1 as what you want
-    v_comp = np.random.normal(5, 1, 1000) #rename column 2 as what you want
-    w_comp = np.random.normal(5, 1, 1000) #rename column 3 as what you want
-    T_comp = np.random.normal(5, 1, 1000) #rename column 4 as what you want
-
-    levels = [2, 5, 10]
-    for level in levels:
-        sonic_data = data_loader.load_processed_sonic_data(level, directory_override=False)
-        T_comp = sonic_data["temp"].dropna()
-        u_comp = sonic_data["u"].dropna()
-        v_comp = sonic_data["v"].dropna()
-        w_comp = sonic_data["w"].dropna()
-
-        directory = get_project_root() / "stats" / str(level)
-        directory.mkdir(parents=True, exist_ok=True)
-        run_stats(T_comp, u_comp, v_comp, w_comp, directory)
 
 
-def run_stats(T_comp, u_comp, v_comp, w_comp, directory):
-    N = len(u_comp)  # number of measurements in column
-    u_comp_mean = sum(u_comp) / N  # mean of measurements
-    # list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    u_comp_fluc = [x - u_comp_mean for x in u_comp]  # fluctuation of each measurement
-    u_comp_var = sum(x ** 2 for x in u_comp_fluc) / (N - 1)  # calcuu_compion of variance from squaring the fluctuations
-    u_comp_std = u_comp_var ** (1 / 2)  # the square root of the variance is the standard deviation
-    u_comp_skew = sum(x ** 3 for x in u_comp_fluc) / (
-                (N - 1) * u_comp_std ** 3)  # calcuu_compion of skewness (the third moment) using list comprehension
-    u_comp_kurt = (sum((x - u_comp_mean) ** 4 for x in
-                       u_comp) / u_comp_std ** 4 / N) - 3  # calcuu_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
-    print("u:")
+
+file1 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_2'
+file2 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_5'
+file3 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_10'
+
+sonic2 = pd.read_csv(file1, sep="\t", index_col=0)
+print(sonic2)
+
+sonic5 = pd.read_csv(file2, sep="\t", index_col=0)
+
+sonic10 = pd.read_csv(file3, sep="\t", index_col=0)
+
+u2 = np.array(sonic2['u'][0:396000].dropna())
+
+v2 = np.array(sonic2['v'][0:396000].dropna())
+
+w2 = np.array(sonic2['w'][0:396000].dropna())
+#pd.to_numeric(w2, errors='coerce')
+T2 = np.array(sonic2['virtual_temp'][0:396000].dropna())
+pd.to_numeric(T2, errors='coerce')
+
+
+u5 = np.array(sonic5['u'][0:396000].dropna())
+#pd.to_numeric(u5, errors='coerce')
+v5 = np.array(sonic5['v'][0:396000].dropna())
+pd.to_numeric(v5, errors='coerce')
+w5 = np.array(sonic5['w'][0:396000].dropna())
+pd.to_numeric(w5, errors='coerce')
+T5 = np.array(sonic5['virtual_temp'][0:396000].dropna())
+pd.to_numeric(T5, errors='coerce')
+
+u10 = np.array(sonic10['u'][0:396000].dropna())
+#pd.to_numeric(u10, errors='coerce')
+v10 = np.array(sonic10['v'][0:396000].dropna())
+pd.to_numeric(v10, errors='coerce')
+w10 = np.array(sonic10['w'][0:396000].dropna())
+pd.to_numeric(w10, errors='coerce')
+T10 = np.array(sonic10['virtual_temp'][0:396000].dropna())
+pd.to_numeric(T10, errors='coerce')
+print(np.nanmean(u5))
+print(np.nanmean(v5))
+
+
+def comp_stats(u_comp,v_comp, w_comp):
+
+    for i in range(len(u_comp)):
+        if u_comp[i] < 10 or u_comp[i] > 25:
+            u_comp[i] = 0
+    for i in range(len(v_comp)):
+        if v_comp[i] < 10 or v_comp[i] > 25:
+            v_comp[i] = 0
+    for i in range(len(w_comp)):
+        if w_comp[i] < 10 or w_comp[i] > 25:
+            w_comp[i] = 0
+    
+
+    N = len(u_comp) # number of measurements in column
+    u_comp_mean = sum(u_comp)/N # mean of measurements
+
+    #list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
+    u_comp_fluc = [x-u_comp_mean for x in u_comp] # fluctuation of each measurement
+
+    u_comp_var = sum(x**2 for x in u_comp_fluc)/(N-1) #calcuu_compion of variance from squaring the fluctuations
+    u_comp_std = u_comp_var**(1/2) # the square root of the variance is the standard deviation
+    u_comp_skew = sum(x**3 for x in u_comp_fluc)/((N-1)*u_comp_std**3) #calcuu_compion of skewness (the third moment) using list comprehension
+    u_comp_kurt = (sum((x-u_comp_mean)**4 for x in u_comp)/u_comp_std**4/N)-3 #calcuu_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
+
     print("The first moment of the data is: ", u_comp_mean)
     print("The second moment of the data is: ", u_comp_var)
     print("The standard deviation of the data is: ", u_comp_std)
     print("The third moment of the data is: ", u_comp_skew)
     print("The fourth moment of the data is: ", u_comp_kurt)
-    x = np.linspace(min(u_comp), max(u_comp),
-                    100)  # change the number of grid points if you want your distribution to be more or less discrete
 
-    # Calculate Probability Density Function
+    x1 = np.linspace(10,25,100) #change the number of grid points if you want your distribution to be more or less discrete
+
+    #Calculate Probability Density Function
     def pdf(x):
-        P_x = (1 / (u_comp_std * np.sqrt(2 * math.pi))) * math.exp(-((x - u_comp_mean) ** 2) / (2 * u_comp_std ** 2))
+        P_x = (1/(u_comp_std*np.sqrt(2*math.pi)))*math.exp(-((x-u_comp_mean)**2)/(2*u_comp_std**2))
         return P_x
 
     pdf = np.vectorize(pdf)
-    pdf = pdf(x)
-    print(pdf)
-    # Calculate Cumulative Density Function
-    cdf = np.zeros(len(pdf))
-    for i in range(len(pdf)):
-        if i == 0:
-            cdf[i] = pdf[i]
-        else:
-            cdf[i] = cdf[i - 1] + pdf[i]
-    cdf = cdf / ((len(x) - 1) / (max(u_comp) - min(u_comp)))  # multiply by spacial step
-    # plot simple histogram
-    bin_num = 25
-    print(bin_num)
-    plt.hist(u_comp, bins=bin_num, density=True, histtype='bar', label="Histogram")
-    # plt.hist(u_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram")
-    plt.plot(x, pdf, 'r-', label="Probability Density Function")  # plot the probability distribution function
-    plt.plot(x, cdf, label="Cumulative Density Function")  # plot the cumulative distribution function
-    plt.ticklabel_format(
-        useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
-    plt.xlabel("U (m/s)")  # change this to you variable of interest
-    plt.xlim(-12, 5)
-    plt.ylabel("Frequency")
-    plt.grid()
-    plt.legend()
-    plt.title("U - Component of Velocity")
-    plt.savefig(directory / "u.png")
-    plt.close()
+    pdf1 = pdf(x1)
 
-    N = len(v_comp)  # number of measurements in column
-    v_comp_mean = sum(v_comp) / N  # mean of measurements
-    # list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    v_comp_fluc = [x - v_comp_mean for x in v_comp]  # fluctuation of each measurement
-    v_comp_var = sum(x ** 2 for x in v_comp_fluc) / (N - 1)  # calcuv_compion of variance from squaring the fluctuations
-    v_comp_std = v_comp_var ** (1 / 2)  # the square root of the variance is the standard deviation
-    v_comp_skew = sum(x ** 3 for x in v_comp_fluc) / (
-                (N - 1) * v_comp_std ** 3)  # calcuv_compion of skewness (the third moment) using list comprehension
-    v_comp_kurt = (sum((x - v_comp_mean) ** 4 for x in
-                       v_comp) / v_comp_std ** 4 / N) - 3  # calcuv_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
-    print("\n\n\nv")
+
+    #Calculate Cumulative Density Function
+    cdf = np.zeros(len(pdf1))
+    for i in range(len(pdf1)):
+        if i == 0:
+            cdf[i] = pdf1[i]
+        else:
+            cdf[i] = cdf[i-1]+pdf1[i]
+    cdf1 = cdf/((len(x1)-1)/(25-10)) #multiply by spacial step
+
+    #plot simple histogram
+    bin_num = 50
+
+    plt.hist(u_comp, bins = bin_num, density = True, histtype = 'step', label = "T-2m: Histogram")
+    #plt.hist(u_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram") 
+
+    plt.plot(x1, pdf1, label = "T-2m: PDF") #plot the probability distribution function
+    plt.plot(x1,cdf1, label = "T-2m: CDF") #plot the cumulative distribution function
+    #plt.ticklabel_format(useOffset=False) #if your x axis looks weird, look up the library and play around with settings
+    #plt.xlabel("U (m/s)") #change this to you variable of interest
+    #plt.ylabel("Frequency")
+    #plt.grid()
+    #plt.legend()
+    #plt.title("U - Component of Velocity")
+    #plt.show()
+
+    N = len(v_comp) # number of measurements in column
+    v_comp_mean = sum(v_comp)/N # mean of measurements
+
+    #list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
+    v_comp_fluc = [x-v_comp_mean for x in v_comp] # fluctuation of each measurement
+
+    v_comp_var = sum(x**2 for x in v_comp_fluc)/(N-1) #calcuv_compion of variance from squaring the fluctuations
+    v_comp_std = v_comp_var**(1/2) # the square root of the variance is the standard deviation
+    v_comp_skew = sum(x**3 for x in v_comp_fluc)/((N-1)*v_comp_std**3) #calcuv_compion of skewness (the third moment) using list comprehension
+    v_comp_kurt = (sum((x-v_comp_mean)**4 for x in v_comp)/v_comp_std**4/N)-3 #calcuv_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
+
     print("The first moment of the data is: ", v_comp_mean)
     print("The second moment of the data is: ", v_comp_var)
     print("The standard deviation of the data is: ", v_comp_std)
     print("The third moment of the data is: ", v_comp_skew)
     print("The fourth moment of the data is: ", v_comp_kurt)
-    x = np.linspace(min(v_comp), max(v_comp),
-                    100)  # change the number of grid points if you want your distribution to be more or less discrete
 
-    # Calculate Probability Density Function
+    x2 = np.linspace(10,25,100) #change the number of grid points if you want your distribution to be more or less discrete
+
+    #Calculate Probability Density Function
     def pdf(x):
-        P_x = (1 / (v_comp_std * np.sqrt(2 * math.pi))) * math.exp(-((x - v_comp_mean) ** 2) / (2 * v_comp_std ** 2))
+        P_x = (1/(v_comp_std*np.sqrt(2*math.pi)))*math.exp(-((x-v_comp_mean)**2)/(2*v_comp_std**2))
         return P_x
 
     pdf = np.vectorize(pdf)
-    pdf = pdf(x)
-    print(pdf)
-    # Calculate Cumulative Density Function
-    cdf = np.zeros(len(pdf))
-    for i in range(len(pdf)):
-        if i == 0:
-            cdf[i] = pdf[i]
-        else:
-            cdf[i] = cdf[i - 1] + pdf[i]
-    cdf = cdf / ((len(x) - 1) / (max(v_comp) - min(v_comp)))  # multiply by spacial step
-    # plot simple histogram
-    bin_num = 25
-    print(bin_num)
-    plt.hist(v_comp, bins=bin_num, density=True, histtype='bar', label="Histogram")
-    # plt.hist(v_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram")
-    plt.plot(x, pdf, 'r-', label="Probability Density Function")  # plot the probability distribution function
-    plt.plot(x, cdf, label="Cumulative Density Function")  # plot the cumulative distribution function
-    plt.ticklabel_format(
-        useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
-    plt.xlabel("V (m/s)")  # change this to you variable of interest
-    plt.xlim(-12, 5)
-    plt.ylabel("Frequency")
-    plt.grid()
-    plt.legend()
-    plt.title("V - Component of Velocity")
-    plt.savefig(directory / "v.png")
-    plt.close()
+    pdf2 = pdf(x2)
 
-    N = len(w_comp)  # number of measurements in column
-    w_comp_mean = sum(w_comp) / N  # mean of measurements
-    # list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    w_comp_fluc = [x - w_comp_mean for x in w_comp]  # fluctuation of each measurement
-    w_comp_var = sum(x ** 2 for x in w_comp_fluc) / (N - 1)  # calcuw_compion of variance from squaring the fluctuations
-    w_comp_std = w_comp_var ** (1 / 2)  # the square root of the variance is the standard deviation
-    w_comp_skew = sum(x ** 3 for x in w_comp_fluc) / (
-                (N - 1) * w_comp_std ** 3)  # calcuw_compion of skewness (the third moment) using list comprehension
-    w_comp_kurt = (sum((x - w_comp_mean) ** 4 for x in
-                       w_comp) / w_comp_std ** 4 / N) - 3  # calcuw_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
-    print("\n\n\nw")
+
+    #Calculate Cumulative Density Function
+    cdf = np.zeros(len(pdf2))
+    for i in range(len(pdf2)):
+        if i == 0:
+            cdf[i] = pdf2[i]
+        else:
+            cdf[i] = cdf[i-1]+pdf2[i]
+    cdf2 = cdf/((len(x2)-1)/(25-10)) #multiply by spacial step
+
+    #plot simple histogram
+    bin_num = 50
+    print(bin_num)
+    plt.hist(v_comp, bins = bin_num, density = True, histtype = 'step', label = "T-5m: Histogram")
+    #plt.hist(v_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram") 
+
+    plt.plot(x2, pdf2, label = "T-5m: PDF") #plot the probability distribution function
+    plt.plot(x2, cdf2, label = "T-5m: CDF") #plot the cumulative distribution function
+    #plt.ticklabel_format(useOffset=False) #if your x axis looks weird, look up the library and play around with settings
+    #plt.xlabel("V (m/s)") #change this to you variable of interest
+    #plt.ylabel("Frequency")
+    #plt.grid()
+    #plt.legend()
+    #plt.title("V - Component of Velocity")
+    #plt.show()
+
+    N = len(w_comp) # number of measurements in column
+    w_comp_mean = sum(w_comp)/N # mean of measurements
+
+    #list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
+    w_comp_fluc = [x-w_comp_mean for x in w_comp] # fluctuation of each measurement
+    w_comp_var = sum(x**2 for x in w_comp_fluc)/(N-1) #calcuw_compion of variance from squaring the fluctuations
+    w_comp_std = w_comp_var**(1/2) # the square root of the variance is the standard deviation
+    w_comp_skew = sum(x**3 for x in w_comp_fluc)/((N-1)*w_comp_std**3) #calcuw_compion of skewness (the third moment) using list comprehension
+    w_comp_kurt = (sum((x-w_comp_mean)**4 for x in w_comp)/w_comp_std**4/N)-3 #calcuw_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
+
     print("The first moment of the data is: ", w_comp_mean)
     print("The second moment of the data is: ", w_comp_var)
     print("The standard deviation of the data is: ", w_comp_std)
     print("The third moment of the data is: ", w_comp_skew)
     print("The fourth moment of the data is: ", w_comp_kurt)
-    x = np.linspace(min(w_comp), max(w_comp),
-                    100)  # change the number of grid points if you want your distribution to be more or less discrete
 
-    # Calculate Probability Density Function
+    x3 = np.linspace(10,25,100) #change the number of grid points if you want your distribution to be more or less discrete
+
+    #Calculate Probability Density Function
     def pdf(x):
-        P_x = (1 / (w_comp_std * np.sqrt(2 * math.pi))) * math.exp(-((x - w_comp_mean) ** 2) / (2 * w_comp_std ** 2))
+        P_x = (1/(w_comp_std*np.sqrt(2*math.pi)))*math.exp(-((x-w_comp_mean)**2)/(2*w_comp_std**2))
         return P_x
 
     pdf = np.vectorize(pdf)
-    pdf = pdf(x)
-    print(pdf)
-    # Calculate Cumulative Density Function
-    cdf = np.zeros(len(pdf))
-    for i in range(len(pdf)):
+    pdf3 = pdf(x3)
+
+
+    #Calculate Cumulative Density Function
+    cdf = np.zeros(len(pdf3))
+    for i in range(len(pdf3)):
         if i == 0:
-            cdf[i] = pdf[i]
+            cdf[i] = pdf3[i]
         else:
-            cdf[i] = cdf[i - 1] + pdf[i]
-    cdf = cdf / ((len(x) - 1) / (max(w_comp) - min(w_comp)))  # multiply by spacial step
-    # plot simple histogram
-    bin_num = 25
+            cdf[i] = cdf[i-1]+pdf3[i]
+    cdf3 = cdf/((len(x3)-1)/(25-10)) #multiply by spacial step
+
+    #plot simple histogram
+    bin_num = 50
     print(bin_num)
-    plt.hist(w_comp, bins=bin_num, density=True, histtype='bar', label="Histogram")
-    # plt.hist(w_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram")
-    plt.plot(x, pdf, 'r-', label="Probability Density Function")  # plot the probability distribution function
-    plt.plot(x, cdf, label="Cumulative Density Function")  # plot the cumulative distribution function
-    plt.ticklabel_format(
-        useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
-    plt.xlabel("W (m/s)")  # change this to you variable of interest
-    plt.xlim(-3, 3)
+    plt.hist(w_comp, bins = bin_num, density = True, histtype = 'step', label = "T-10m: Histogram")
+    #plt.hist(w_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram") 
+
+    skew2 = "The Skewness at 2m: "
+    skew5 = "The Skewness at 5m: "
+    skew10 = "The Skewness at 10m: "
+    
+    kurt2 = "The Kurtosis at 2m: "
+    kurt5 = "The Kurtosis at 5m: "
+    kurt10 = "The Kurtosis at 10m: "
+    plt.text(12.5, 0.65, skew2+str('{0:.3g}'.format(u_comp_skew)))
+    plt.text(12.5, 0.6, skew5+str('{0:.3g}'.format(v_comp_skew)))
+    plt.text(12.5, 0.55, skew10+str('{0:.3g}'.format(w_comp_skew)))
+
+    plt.text(12.5, 0.5, kurt2+str('{0:.3g}'.format(u_comp_kurt)))
+    plt.text(12.5, 0.45, kurt5+str('{0:.3g}'.format(v_comp_kurt)))
+    plt.text(12.5, 0.4, kurt10+str('{0:.3g}'.format(w_comp_kurt)))
+
+
+
+    plt.plot(x3,pdf3, label = "T-10m: PDF") #plot the probability distribution function
+    plt.plot(x3,cdf3, label = "T-10m: CDF") #plot the cumulative distribution function
+    plt.ticklabel_format(useOffset=False) #if your x axis looks weird, look up the library and play around with settings
+    plt.xlabel("Temperature") #change this to you variable of interest
     plt.ylabel("Frequency")
     plt.grid()
-    plt.legend()
-    plt.title("W - Component of Velocity")
-    plt.savefig(directory / "w.png")
-    plt.close()
+    plt.title("Temperature During Fog Event")
+    plt.legend(loc = "upper left")
+    plt.show()
+    
 
-    N = len(T_comp)  # number of measurements in column
-    T_comp_mean = sum(T_comp) / N  # mean of measurements
-    # list compreheson: super weird pythonic notation that allows you to basically write a for loop inside the list where you are storing the output
-    T_comp_fluc = [x - T_comp_mean for x in T_comp]  # fluctuation of each measurement
-    T_comp_var = sum(x ** 2 for x in T_comp_fluc) / (N - 1)  # calcuT_compion of variance from squaring the fluctuations
-    T_comp_std = T_comp_var ** (1 / 2)  # the square root of the variance is the standard deviation
-    T_comp_skew = sum(x ** 3 for x in T_comp_fluc) / (
-                (N - 1) * T_comp_std ** 3)  # calcuT_compion of skewness (the third moment) using list comprehension
-    T_comp_kurt = (sum((x - T_comp_mean) ** 4 for x in
-                       T_comp) / T_comp_std ** 4 / N) - 3  # calcuT_compion of kurtosis (the fourth moment) using list comprehension, the minus 3 is because the normal distribution has a value of 3... therefore the value returned from your data is in reference to the kurtosis of the normal distribution.
-    print("\n\n\nT")
-    print("The first moment of the data is: ", T_comp_mean)
-    print("The second moment of the data is: ", T_comp_var)
-    print("The standard deviation of the data is: ", T_comp_std)
-    print("The third moment of the data is: ", T_comp_skew)
-    print("The fourth moment of the data is: ", T_comp_kurt)
-    x = np.linspace(min(T_comp), max(T_comp),
-                    100)  # change the number of grid points if you want your distribution to be more or less discrete
-
-    # Calculate Probability Density Function
-    def pdf(x):
-        P_x = (1 / (T_comp_std * np.sqrt(2 * math.pi))) * math.exp(-((x - T_comp_mean) ** 2) / (2 * T_comp_std ** 2))
-        return P_x
-
-    pdf = np.vectorize(pdf)
-    pdf = pdf(x)
-    print(pdf)
-    # Calculate Cumulative Density Function
-    cdf = np.zeros(len(pdf))
-    for i in range(len(pdf)):
-        if i == 0:
-            cdf[i] = pdf[i]
-        else:
-            cdf[i] = cdf[i - 1] + pdf[i]
-    cdf = cdf / ((len(x) - 1) / (max(T_comp) - min(T_comp)))  # multiply by spacial step
-    # plot simple histogram
-    bin_num = 25
-    print(bin_num)
-    plt.hist(T_comp, bins=bin_num, density=True, histtype='bar', label="Histogram")
-    # plt.hist(T_comp, bins = bin_num, density = True, cumulative = True, histtype = 'bar', label = "Cumulative Histogram")
-    plt.plot(x, pdf, 'r-', label="Probability Density Function")  # plot the probability distribution function
-    plt.plot(x, cdf, label="Cumulative Density Function")  # plot the cumulative distribution function
-    plt.ticklabel_format(
-        useOffset=False)  # if your x axis looks weird, look up the library and play around with settings
-    plt.xlabel("T (K)")  # change this to you variable of interest
-    plt.xlim(9, 18)
-    plt.ylabel("Frequency")
-    plt.grid()
-    plt.legend()
-    plt.title("Temperature")
-    plt.savefig(directory / "temp.png")
-    plt.close()
-
-
-if __name__=="__main__":
-    main()
+U = comp_stats(T2,T5,T10)
