@@ -59,6 +59,20 @@ def plot_v_avg_from_saved_data(config, levels):
 def run_v_avg(config, sonic_data_sets):
     run_var_average("v", "v", config, sonic_data_sets)
 
+def plot_rho_v_avg_from_saved_data(config, levels):
+    plot_var_avg_from_saved_data("rho_v", config, levels)
+
+
+def run_rho_v_avg(config, sonic_data_sets):
+    run_var_average("rho_v", "rho_v", config, sonic_data_sets)
+
+def plot_pressure_avg_from_saved_data(config, levels):
+    plot_var_avg_from_saved_data("pressure", config, levels)
+
+
+def run_pressure_avg(config, sonic_data_sets):
+    run_var_average("pressure", "pressure", config, sonic_data_sets)
+
 
 def run_T_avg(config, sonic_data_sets):
     run_var_average("T", "temp", config, sonic_data_sets)

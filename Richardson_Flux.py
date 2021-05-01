@@ -1,18 +1,41 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import datetime
+from utils import path_util
 
 
+# file1 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_2'
+# file2 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_5'
+# file3 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_10'
 
-file1 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_2'
-file2 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_5'
-file3 = r'C:\Users\makom\source\repos\EFD_Final_Project\EFD_Final_Project\select_fields\sonic_data_10'
+file_dir = path_util.get_project_root() / "data" / "2021 Final Project Data" / "SonicData" / "select_fields"
+file1 = file_dir / "sonic_data_2"
+file2 = file_dir / "sonic_data_5"
+file3 = file_dir / "sonic_data_10"
 
-sonic2 = pd.read_csv(file1, sep="\t", index_col=0)
-sonic5 = pd.read_csv(file2, sep="\t", index_col=0)
-sonic10 = pd.read_csv(file3, sep="\t", index_col=0)
 
-time = sonic2['time']
+def load_data(file):
+    return pd.read_csv(file, sep="\t", index_col=0, parse_dates=["time"])
+
+
+sonic2 = load_data(file1)
+sonic5 = load_data(file2)
+sonic10 = load_data(file3)
+
+
+def correct_time(data):
+    data["time"] = data["time"] - datetime.timedelta(days=366)
+    # data = data[(data["time"] >= pd.Timestamp('2018-09-13 21:00:00')) &
+    #             (data["time"] <= pd.Timestamp('2018-09-14 06:00:00'))]
+    return data
+
+
+sonic2 = correct_time(sonic2)
+sonic5 = correct_time(sonic5)
+sonic10 = correct_time(sonic10)
+
+time = sonic2['time'].to_numpy()
 print(time)
 u2 = pd.to_numeric(sonic2['u'], errors='coerce')
 u2 = np.array(u2)
@@ -145,7 +168,7 @@ for i in range(0,len(u2),avg_period):
     u10ip = u10ir[0]-u10im[0] #calculate the primes of u
     #print(u10ip)
 
-    Ri_time.append(time[i][0:16]) #create time array of equal length to RI array
+    Ri_time.append(time[i]) #create time array of equal length to RI array
     
     u2i = u2[i:i+avg_period] #extract window to be averaged
     v2i = v2[i:i+avg_period] #v component window index i
@@ -209,26 +232,34 @@ for i in range(0,len(u2),avg_period):
 #limit the range of Richards numbers to relavent values values greater than 10 are excluded, negative values generally mean Ri no longer good measurement
 for i in range(len(Ri_5)):
     if Ri_2[i] > 10:
-        Ri_2[i] = np.nan
+        Ri_2[i] = 10
     if Ri_2[i] < -5:
-        Ri_2[i] = np.nan
+        Ri_2[i] = -5
     if Ri_5[i] > 10:
-        Ri_5[i] = np.nan
+        Ri_5[i] = 10
     if Ri_5[i] < -5:
-        Ri_5[i] = np.nan
+        Ri_5[i] = -5
     if Ri_10[i] > 10:
-        Ri_10[i] = np.nan
+        Ri_10[i] = 10
     if Ri_10[i] < -5:
-        Ri_10[i] = np.nan
+        Ri_10[i] = -5
 
 fig, ax = plt.subplots()
 plt.plot(Ri_time, Ri_2, "r-", label = "Ri # @ 2-meters")
 plt.plot(Ri_time, Ri_5, "b-", label = "Ri # @ 5-meters")
 plt.plot(Ri_time, Ri_10,"g-", label = "Ri # @ 10-meters")
-ax.xaxis.set_major_locator(plt.MaxNLocator(10)) #number of ticks on the x-axis set to 10 
+import matplotlib.dates as mdates
+ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(mdates.HourLocator()))
+from calculations.simple_time_averaging import get_dissipation_formation_times
+dissipation, formation = get_dissipation_formation_times()
+for line1, line2 in zip(formation, dissipation):
+    ax.axvspan(line1, line2, alpha=0.2, color='blue')
+
 ax.yaxis.set_major_locator(plt.MaxNLocator(20)) #number of ticks on the y-axis set to 20
+plt.xlim(pd.Timestamp('2018-09-13 21:00:00'), pd.Timestamp('2018-09-14 06:00:00'))
 plt.ylabel('Richardson Number')
 plt.title("10-Minute Average Richardson Flux During Fog Event")
 plt.legend()
 plt.grid()
+fig.set_size_inches(10, 4)
 plt.show()
